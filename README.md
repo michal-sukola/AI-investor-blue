@@ -1,5 +1,10 @@
 # AI Portfolio Manager
 
+## Links
+- Front-end: https://yellow-island-0ca74b503.7.azurestaticapps.net
+- Back-end: func-aiinvestor-dev-s4qjz3sluqjre.azurewebsites.net
+- Health: [http://func-aiinvestor-dev-s4qjz3sluqjre.azurewebsites.net/api/healthhttp://func-aiinvestor-dev-s4qjz3sluqjre.azurewebsites.net/api/health](https://func-aiinvestor-dev-s4qjz3sluqjre.azurewebsites.net/api/health)
+
 An autonomous, paper-trading portfolio manager built as a live GenAI demo. A
 Claude agent runs every weekday, scans a watchlist, decides trades, and writes
 an investment memo — all backed by a Python Azure Function App, with a React
