@@ -32,6 +32,7 @@ export default function Positions() {
   const { positions, cash } = data;
 
   return (
+    <>
     <div className="panel">
       <h2>Positions</h2>
       <table>
@@ -93,5 +94,6 @@ export default function Positions() {
       </table>
     </div>
     {selected && <StockDetail symbol={selected} onClose={() => setSelected(null)} />}
+    </>
   );
 }
