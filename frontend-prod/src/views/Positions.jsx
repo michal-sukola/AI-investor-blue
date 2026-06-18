@@ -10,12 +10,15 @@ import { usd, pct, num, signClass } from "../components/format.js";
 // market_value is the last-trade value, not live).
 async function loadPositions() {
   const { positions, cash } = await getPortfolio();
-  const quotes = await Promise.all(positions.map((p) => getPrice(p.symbol)));
+  // allSettled so a 500 from a single symbol (e.g. Finnhub rate-limit) does not
+  // crash the whole view — that position shows stored market_value and null P&L.
+  const quoteResults = await Promise.allSettled(positions.map((p) => getPrice(p.symbol)));
   const enriched = positions.map((p, i) => {
-    const price = quotes[i].price;
-    const marketValue = price * p.shares;
-    const unrealized = (price - p.avg_cost) * p.shares;
-    const pnlPct = price / p.avg_cost - 1;
+    const r = quoteResults[i];
+    const price = r.status === "fulfilled" ? r.value.price : null;
+    const marketValue = price != null ? price * p.shares : p.market_value;
+    const unrealized = price != null ? (price - p.avg_cost) * p.shares : null;
+    const pnlPct = price != null ? price / p.avg_cost - 1 : null;
     return { ...p, price, marketValue, unrealized, pnlPct };
   });
   return { positions: enriched, cash };

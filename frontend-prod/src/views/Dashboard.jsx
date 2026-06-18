@@ -15,8 +15,14 @@ async function loadDashboard() {
   const [portfolio, history] = await Promise.all([getPortfolio(), getHistory()]);
   // Re-mark positions with live prices so Portfolio Value and P&L (Performance tab)
   // use the same price basis. The backend stores last-trade market_value, not live.
-  const quotes = await Promise.all(portfolio.positions.map((p) => getPrice(p.symbol)));
-  const livePositionsValue = quotes.reduce((sum, q, i) => sum + q.price * portfolio.positions[i].shares, 0);
+  // allSettled so a single failing quote (e.g. 500 from Finnhub rate-limit) does not
+  // crash the whole dashboard — fall back to the stored market_value for that position.
+  const quoteResults = await Promise.allSettled(portfolio.positions.map((p) => getPrice(p.symbol)));
+  const livePositionsValue = quoteResults.reduce((sum, r, i) => {
+    const pos = portfolio.positions[i];
+    const price = r.status === "fulfilled" ? r.value.price : null;
+    return sum + (price != null ? price * pos.shares : pos.market_value);
+  }, 0);
   const total_value = livePositionsValue + portfolio.cash;
   return { portfolio: { ...portfolio, total_value }, history };
 }
