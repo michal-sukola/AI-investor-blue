@@ -39,24 +39,30 @@ export default function StockDetail({ symbol, onClose, days = 30 }) {
   if (loading) return <Loading label={`Loading ${symbol} history…`} />;
   if (error) return <ErrorState error={error} />;
 
-  // Build per-day shares held using snapshots (most recent first). We'll map
-  // snapshot timestamps to the nearest date in `series` and compute market value.
+  // Build per-day held shares by applying trades up to each series date so
+  // every date in `series` shows the shares held and market value on that day.
+  // This is more reliable than snapshots for per-date holdings.
   const dateToClose = Object.fromEntries(series.map((s) => [s.date, s.close]));
-  const rows = snapshots.runs ? [] : []; // default shape when API returns object vs array
-  // The GET /snapshots stub returns an array; our call gets that array directly.
-  const snapsArray = Array.isArray(snapshots) ? snapshots : (snapshots.runs || snapshots);
+  const symbolTrades = trades
+    .map((t) => ({ ...t, date: t.date }))
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 
-  const historyRows = snapsArray
-    .map((snap) => {
-      const date = snap.timestamp ? snap.timestamp.slice(0, 10) : snap.date;
-      const pos = (snap.positions || []).find((p) => p.symbol === symbol);
-      const shares = pos ? pos.shares : 0;
-      const close = dateToClose[date] ?? null;
+  // For each date in series (ascending), compute cumulative shares from trades
+  let cumulative = 0;
+  const historyRows = series
+    .slice(-days)
+    .map((s) => {
+      // Apply any trades that happened on this date (or earlier) that haven't
+      // been applied yet. We advance through symbolTrades incrementally.
+      // To keep this simple and deterministic, recalc cumulative from scratch
+      // for each date by summing trades <= date.
+      const shares = symbolTrades.reduce((acc, t) => {
+        return acc + (t.date <= s.date ? (t.side === "BUY" ? t.shares : -t.shares) : 0);
+      }, 0);
+      const close = s.close ?? null;
       const marketValue = close != null ? close * shares : null;
-      return { date, shares, close, marketValue };
-    })
-    .filter((r) => r.date)
-    .slice(0, days);
+      return { date: s.date, shares, close, marketValue };
+    });
 
   return (
     <div className="overlay">
