@@ -55,6 +55,13 @@ export async function getHistory() {
   return { series: stub.history(), isStub: true };
 }
 
+// ---- Per-symbol daily close series (stub only for now)
+export async function getSymbolHistory(symbol, days = 30) {
+  if (USE_STUBS) return { series: stub.symbolHistory(symbol, days), isStub: true };
+  // Real endpoint not implemented yet — return stub flagged as stub.
+  return { series: stub.symbolHistory(symbol, days), isStub: true };
+}
+
 export const usingStubs = USE_STUBS;
 
 // ---------------------------------------------------------------------------
@@ -183,5 +190,31 @@ const stub = {
       });
     }
     return out;
+  },
+  
+  // Per-symbol mock daily closes. Produces `days` entries ending on the last
+  // date used by `history()` so charts line up in the demo.
+  symbolHistory: (symbol, days = 30) => {
+    const base = STUB_QUOTES[symbol] ?? 100;
+    const h = stub.history();
+    const out = [];
+    // Reuse history() dates when available; otherwise generate recent dates.
+    for (let i = Math.max(0, h.length - days); i < h.length; i++) {
+      const date = h[i].date;
+      // Simple price series: base ± small oscillation tied to index
+      const noise = Math.sin(i / 3) * 0.02 + (Math.random() - 0.5) * 0.01;
+      const close = Math.max(1, base * (1 + noise));
+      out.push({ date, close: Number(close.toFixed(2)) });
+    }
+    // If more days requested than history provides, prepend older synthetic days
+    while (out.length < days) {
+      const firstDate = new Date(out[0].date);
+      firstDate.setDate(firstDate.getDate() - 1);
+      const date = firstDate.toISOString().slice(0, 10);
+      const prev = out[0].close;
+      const close = Math.max(1, prev * (1 + (Math.random() - 0.5) * 0.02));
+      out.unshift({ date, close: Number(close.toFixed(2)) });
+    }
+    return out.slice(-days);
   },
 };

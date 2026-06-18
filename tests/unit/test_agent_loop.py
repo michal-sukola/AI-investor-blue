@@ -108,6 +108,12 @@ def test_add_respects_size_cap(fc):
     assert "NEW" not in wl and changed is False
 
 
+def test_default_watchlist_includes_european_defense_etf():
+    assert "EXV1" in loop.DEFAULT_WATCHLIST
+    assert "VGK" in loop.DEFAULT_WATCHLIST
+    assert "ITA" not in loop.DEFAULT_WATCHLIST
+
+
 # ---- _write_snapshot -------------------------------------------------------
 
 def test_write_snapshot_marks_to_market_and_appends(blob_store, monkeypatch):
