@@ -1,5 +1,7 @@
 import { getPortfolio, getPrice } from "../api.js";
 import { useAsync } from "../components/useAsync.js";
+import { useState } from "react";
+import StockDetail from "./StockDetail.jsx";
 import { Loading, ErrorState, Empty } from "../components/States.jsx";
 import { usd, pct, num, signClass } from "../components/format.js";
 
@@ -21,6 +23,7 @@ async function loadPositions() {
 
 export default function Positions() {
   const { data, loading, error } = useAsync(loadPositions);
+  const [selected, setSelected] = useState(null);
 
   if (loading) return <Loading label="Loading positions & live prices…" />;
   if (error) return <ErrorState error={error} />;
@@ -46,7 +49,9 @@ export default function Positions() {
         <tbody>
           {positions.map((r) => (
             <tr key={r.symbol}>
-              <td>{r.symbol}</td>
+              <td>
+                <button className="link-btn" onClick={() => setSelected(r.symbol)}>{r.symbol}</button>
+              </td>
               <td className="mono">{num(r.shares)}</td>
               <td className="mono">{usd(r.avg_cost)}</td>
               <td className="mono">{usd(r.price)}</td>
@@ -87,5 +92,6 @@ export default function Positions() {
         </tfoot>
       </table>
     </div>
+    {selected && <StockDetail symbol={selected} onClose={() => setSelected(null)} />}
   );
 }

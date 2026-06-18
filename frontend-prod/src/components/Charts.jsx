@@ -5,6 +5,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
 
+import { ReferenceDot } from "recharts";
+
 // Palette mirrors theme.css (Recharts needs explicit colors, not CSS vars).
 const C = {
   accent: "#58a6ff",
@@ -67,6 +69,27 @@ export function DailyPnlChart({ series }) {
             ))}
           </Bar>
         </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+// Single-stock price series with trade markers (buys green, sells red).
+export function StockPriceChart({ series, trades }) {
+  // series: [{date, close}], trades: [{date,price,side}]
+  return (
+    <div className="chart-wrap">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={series} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
+          <CartesianGrid stroke={C.grid} strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="date" tick={axis} tickLine={false} axisLine={{ stroke: C.grid }} minTickGap={24} />
+          <YAxis tick={axis} tickLine={false} axisLine={false} width={68} />
+          <Tooltip contentStyle={tooltipStyle} formatter={(v) => `$${Number(v).toFixed(2)}`} />
+          <Line type="monotone" dataKey="close" name="Close" stroke={C.accent} strokeWidth={2} dot={false} />
+          {trades && trades.map((t, i) => (
+            <ReferenceDot key={i} x={t.date} y={t.price} r={5} fill={t.side === 'BUY' ? C.pos : C.neg} stroke="white" strokeWidth={1} />
+          ))}
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );
