@@ -39,30 +39,20 @@ export default function StockDetail({ symbol, onClose, days = 30 }) {
   if (loading) return <Loading label={`Loading ${symbol} history…`} />;
   if (error) return <ErrorState error={error} />;
 
-  // Build per-day held shares by applying trades up to each series date so
-  // every date in `series` shows the shares held and market value on that day.
-  // This is more reliable than snapshots for per-date holdings.
   const dateToClose = Object.fromEntries(series.map((s) => [s.date, s.close]));
-  const symbolTrades = trades
-    .map((t) => ({ ...t, date: t.date }))
-    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  const snapsArray = Array.isArray(snapshots) ? snapshots : (snapshots.runs || snapshots);
 
-  // For each date in series (ascending), compute cumulative shares from trades
-  let cumulative = 0;
-  const historyRows = series
-    .slice(-days)
-    .map((s) => {
-      // Apply any trades that happened on this date (or earlier) that haven't
-      // been applied yet. We advance through symbolTrades incrementally.
-      // To keep this simple and deterministic, recalc cumulative from scratch
-      // for each date by summing trades <= date.
-      const shares = symbolTrades.reduce((acc, t) => {
-        return acc + (t.date <= s.date ? (t.side === "BUY" ? t.shares : -t.shares) : 0);
-      }, 0);
-      const close = s.close ?? null;
-      const marketValue = close != null ? close * shares : null;
-      return { date: s.date, shares, close, marketValue };
-    });
+  const historyRows = snapsArray
+    .map((snap) => {
+      const date = snap.timestamp ? snap.timestamp.slice(0, 10) : snap.date;
+      const pos = (snap.positions || []).find((p) => p.symbol === symbol);
+      const shares = pos ? pos.shares : 0;
+      const close = dateToClose[date] ?? null;
+      const value = close != null ? close * shares : null;
+      return { date, shares, close, value };
+    })
+    .filter((r) => r.shares > 0)
+    .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 
   return (
     <div className="overlay">
@@ -76,14 +66,14 @@ export default function StockDetail({ symbol, onClose, days = 30 }) {
             <StockPriceChart series={series} trades={trades.map((t) => ({ date: t.date, price: t.price, side: t.side }))} />
           </div>
           <div>
-            <h3>Shares / Market value by day</h3>
+            <h3>Shares / Position value by day</h3>
             <table>
               <thead>
                 <tr>
                   <th>Date</th>
                   <th>Shares</th>
-                  <th>Close</th>
-                  <th>Market value</th>
+                  <th>Price</th>
+                  <th>Position value</th>
                 </tr>
               </thead>
               <tbody>
@@ -92,7 +82,7 @@ export default function StockDetail({ symbol, onClose, days = 30 }) {
                     <td>{r.date}</td>
                     <td className="mono">{num(r.shares)}</td>
                     <td className="mono">{r.close != null ? usd(r.close) : "—"}</td>
-                    <td className="mono">{r.marketValue != null ? usd(r.marketValue) : "—"}</td>
+                    <td className="mono">{r.value != null ? usd(r.value) : "—"}</td>
                   </tr>
                 ))}
               </tbody>
