@@ -11,6 +11,11 @@ def test_mandate_is_nonempty_text():
     assert isinstance(prompts.MANDATE, str) and len(prompts.MANDATE) > 0
 
 
+def test_mandate_includes_diversification_guidance():
+    assert "DIVERZIFIKÁCIA" in prompts.MANDATE
+    assert "technologického sektoru" in prompts.MANDATE
+
+
 def test_screening_prompt_includes_symbols_and_json_contract():
     rows = [{"symbol": "AAPL", "price": 100,
              "recommendation": {"strong_buy": 1, "buy": 2, "hold": 0, "sell": 0, "strong_sell": 0}}]
@@ -19,6 +24,7 @@ def test_screening_prompt_includes_symbols_and_json_contract():
     assert "AAPL" in s
     assert '"selected"' in s          # the JSON keys the loop parses
     assert '"add"' in s and '"remove"' in s
+    assert "sektorovému" in s or "sektor" in s
 
 
 def test_screening_prompt_handles_no_positions():

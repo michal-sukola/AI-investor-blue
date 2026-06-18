@@ -37,13 +37,12 @@ MAX_WATCHLIST = 30
 
 # Sector-diversified seed; the agent grows/prunes it from here.
 DEFAULT_WATCHLIST = [
-    "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL",  # tech / comms
-    "JPM", "BRK.B",                            # financials
-    "UNH", "LLY",                              # healthcare
-    "XOM",                                     # energy
-    "CAT",                                     # industrials
-    "PG",                                      # staples
-    "SPY", "QQQ",                              # ETFs
+    "AAPL", "MSFT", "NVDA", "GOOGL",       # tech / comms
+    "JPM", "BRK.B", "GS",                    # financials
+    "UNH", "LLY", "MRK",                    # healthcare
+    "XOM", "CVX",                             # energy
+    "CAT", "PG",                              # industrials / staples
+    "SPY",                                      # broad market ETF
 ]
 
 
