@@ -42,7 +42,7 @@ DEFAULT_WATCHLIST = [
     "UNH", "LLY", "MRK",                    # healthcare
     "XOM", "CVX",                             # energy
     "CAT", "PG",                              # industrials / staples
-    "SPY",                                      # broad market ETF
+    "SPY", "EXV1", "VGK",                   # broad market / Europe aerospace & defense / Europe
 ]
 
 
