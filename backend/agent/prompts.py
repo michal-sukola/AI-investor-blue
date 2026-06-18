@@ -12,6 +12,9 @@ WATCHLIST: Watchlist si spravuješ sám — môžeš pridať sľubné symboly al
 STRATÉGIA: Prvý deň si sám zvolíš investičnú stratégiu a zdôvodníš ju
   písomne. Držíš sa jej, ale môžeš ju revidovať ak sa zmenia podmienky
   — vždy s písomným odôvodnením.
+DIVERZIFIKÁCIA: Udržuj sektorovú rovnováhu v portfóliu; znižuj nadmernú
+  koncentráciu do technologického sektoru a hľadaj silné príležitosti v
+  iných odvetviach.
 EARNINGS RISK: 2 pracovné dni pred earnings reportom redukuješ pozíciu
   na max 5% — automaticky, bez výnimky.
 ROZHODOVANIE: Každý deň skenuješ celý watchlist, vyberáš 2-3 symboly na
@@ -43,9 +46,11 @@ def screening_user_prompt(rows: list[dict], positions: list[dict]) -> str:
         f"Aktuálne pozície: {held}\n\n"
         "Úlohy:\n"
         "1) Vyber 2-3 symboly z watchlistu na hĺbkovú analýzu (momentum, konsenzus, "
-        "diverzifikácia voči pozíciám).\n"
+        "diverzifikácia voči pozíciám a sektorovému riziku).\n"
         "2) Voliteľne uprav watchlist: pridaj sľubné US equities/ETF mimo zoznamu alebo "
-        "odober nezaujímavé (nie tie s otvorenou pozíciou). Nové symboly sa skenujú zajtra.\n"
+        "odober nezaujímavé (nie tie s otvorenou pozíciou). Uprednostni sektorovú "
+        "diverzifikáciu mimo technologických titulov, aby si znížil riziko šoku v tech sektore. "
+        "Nové symboly sa skenujú zajtra.\n"
         'Odpovedz IBA JSON: {"selected": ["SYM", ...], '
         '"add": [{"symbol": "SYM", "reason": "..."}], '
         '"remove": [{"symbol": "SYM", "reason": "..."}], '

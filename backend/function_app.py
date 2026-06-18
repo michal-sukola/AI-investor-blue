@@ -8,7 +8,7 @@ import azure.functions as func
 from market.finnhub import FinnhubClient
 from storage.blobs import write_parquet, read_parquet
 from trading import apply_trade, TradeError
-from agent.loop import run_agent, snapshot_portfolio
+from agent.loop import DEFAULT_WATCHLIST, run_agent, snapshot_portfolio
 
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
@@ -47,15 +47,7 @@ def admin_init(req: func.HttpRequest) -> func.HttpResponse:
         write_parquet(CONTAINER, "trades.parquet", trades)
 
         # Watchlist — sector-diversified seed; the agent grows/prunes it from here.
-        watchlist = pl.DataFrame(
-            {
-                "symbol": [
-                    "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL",
-                    "JPM", "BRK.B", "UNH", "LLY", "XOM",
-                    "CAT", "PG", "SPY", "QQQ",
-                ],
-            }
-        )
+        watchlist = pl.DataFrame({"symbol": DEFAULT_WATCHLIST})
         write_parquet(CONTAINER, "watchlist.parquet", watchlist)
 
         # Agent log
